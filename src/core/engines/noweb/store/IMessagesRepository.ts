@@ -24,4 +24,7 @@ export interface IMessagesRepository {
   deleteByJidByIds(jid: string, ids: string[]): Promise<void>;
 
   deleteAllByJid(jid: string): Promise<void>;
+
+  // Mail2Chat: removes the stored messages older than this time (seconds).
+  deleteOlderThan(timestamp: number): Promise<void>;
 }

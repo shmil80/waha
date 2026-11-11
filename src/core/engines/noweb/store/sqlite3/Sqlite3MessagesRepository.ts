@@ -64,4 +64,8 @@ export class Sqlite3MessagesRepository
   deleteAllByJid(jid: string): Promise<void> {
     return this.methods.deleteAllByJid(jid);
   }
+
+  deleteOlderThan(timestamp: number): Promise<void> {
+    return this.methods.deleteOlderThan(timestamp);
+  }
 }

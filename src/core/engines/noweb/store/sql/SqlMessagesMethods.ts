@@ -119,6 +119,14 @@ export class SqlMessagesMethods {
     return this.repository.deleteBy({ jid: jid });
   }
 
+  // Mail2Chat: removes the stored messages older than this time (seconds).
+  async deleteOlderThan(timestamp: number): Promise<void> {
+    const query = `DELETE
+                   FROM "${this.repository.table}"
+                   WHERE "messageTimestamp" < ?`;
+    await this.repository.raw(query, [timestamp]);
+  }
+
   private applyPnJidFilter(
     query: Knex.QueryBuilder,
     pnJid: string,

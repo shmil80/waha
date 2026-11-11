@@ -79,4 +79,8 @@ export class MongoMessagesRepository
   deleteAllByJid(jid: string): Promise<void> {
     return this.deleteBy({ jid: jid });
   }
+
+  async deleteOlderThan(timestamp: number): Promise<void> {
+    await this.collection.deleteMany({ messageTimestamp: { $lt: timestamp } });
+  }
 }

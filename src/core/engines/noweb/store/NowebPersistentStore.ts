@@ -107,8 +107,34 @@ export class NowebPersistentStore implements INowebStore {
     this.presences = {};
   }
 
-  init(): Promise<void> {
-    return this.storage.init();
+  async init(): Promise<void> {
+    await this.storage.init();
+    this.startMessageRetention();
+  }
+
+  // Mail2Chat: the store is only there so the service can read messages back after its own restart, so messages older
+  // than MAIL2CHAT_MESSAGE_RETENTION_DAYS are removed: once at start and then every that many days. Unset or 0: nothing is removed.
+  private retentionTimer: any = null;
+
+  private startMessageRetention() {
+    const days = Number(process.env.MAIL2CHAT_MESSAGE_RETENTION_DAYS || 0);
+    if (!(days > 0)) {
+      return;
+    }
+    const removeOld = async () => {
+      try {
+        const limit = Math.floor(Date.now() / 1000) - days * 24 * 60 * 60;
+        await this.messagesRepo.deleteOlderThan(limit);
+        this.logger.info(`store retention - removed messages older than '${days}' days`);
+      } catch (error) {
+        this.logger.warn(`store retention failed: ${error}`);
+      }
+    };
+    void removeOld();
+    // setInterval cannot take more than about 24 days
+    const every = Math.min(days * 24 * 60 * 60 * 1000, 2_000_000_000);
+    this.retentionTimer = setInterval(removeOld, every);
+    this.retentionTimer.unref?.();
   }
 
   bind(ev: BaileysEventEmitter, socket: any) {
@@ -237,6 +263,10 @@ export class NowebPersistentStore implements INowebStore {
   }
 
   async close(): Promise<void> {
+    if (this.retentionTimer) {
+      clearInterval(this.retentionTimer);
+      this.retentionTimer = null;
+    }
     await this.storage?.close().catch((error) => {
       this.logger.warn(`Failed to close storage: ${error}`);
     });
