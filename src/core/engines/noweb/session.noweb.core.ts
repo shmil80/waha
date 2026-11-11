@@ -85,6 +85,8 @@ import { QR } from '@waha/core/QR';
 import { AckToStatus, StatusToAck } from '@waha/core/utils/acks';
 import { pairs } from '@waha/utils/pairs';
 import { ExtractMessageKeysForRead } from '@waha/core/utils/convertors';
+import { encryptPollVote } from '@waha/core/engines/noweb/poll-vote';
+import { MessagePollVoteRequest } from '@waha/structures/chatting.dto';
 import { parseMessageIdSerialized } from '@waha/core/utils/ids';
 import {
   isJidNewsletter,
@@ -1335,6 +1337,79 @@ export class WhatsappSessionNoWebCore extends WhatsappSession {
     const options = await this.getMessageOptions(request);
     const result = await this.sock.sendMessage(remoteJid, message, options);
     return await this.toWAMessage(result);
+  }
+
+  // Mail2Chat: NOWEB had no sendPollVote (GOWS and WEBJS do). The vote is encrypted with the poll's messageSecret, the same way as in decryptPollVote.
+  @Activity()
+  async sendPollVote(request: MessagePollVoteRequest) {
+    const jid = await this.hooks.wid.chat.promise(
+      request.chatId,
+      'sendPollVote',
+    );
+    const me = this.getSessionMeInfo();
+    if (!me) {
+      throw new UnprocessableEntityException('Session info is not available');
+    }
+    const pollKey = parseMessageIdSerialized(request.pollMessageId, true);
+    // the poll is looked up by its id only, as in issueMessageUpdateOnPoll: the stored chat can be a LID
+    const stored = await this.store?.loadMessage(null, pollKey.id);
+    const content = normalizeMessageContent(stored?.message);
+    const poll =
+      content?.pollCreationMessage ??
+      content?.pollCreationMessageV2 ??
+      content?.pollCreationMessageV3;
+    const secret =
+      stored?.message?.messageContextInfo?.messageSecret ??
+      content?.messageContextInfo?.messageSecret;
+    if (!poll || !secret) {
+      throw new UnprocessableEntityException(
+        'The poll is not in the store, or it has no secret, so it cannot be voted on',
+      );
+    }
+    const optionNames = poll.options.map((option) => option.optionName);
+    const unknown = request.votes.filter((vote) => !optionNames.includes(vote));
+    if (unknown.length > 0) {
+      throw new UnprocessableEntityException(
+        `Not an option of the poll: ${unknown.join(', ')}`,
+      );
+    }
+
+    // the creator in the form the poll arrived with; our own id in the same family, as whatsmeow does
+    const creatorJid = jidNormalizedUser(
+      stored.key.fromMe
+        ? (me.lid ?? me.id)
+        : (stored.key.participant || stored.key.remoteJid),
+    );
+    const ownJid = isLidUser(creatorJid)
+      ? jidNormalizedUser(me.lid ?? me.id)
+      : jidNormalizedUser(me.id);
+    const vote = encryptPollVote(request.votes, {
+      pollCreatorJid: creatorJid,
+      pollMsgId: pollKey.id,
+      pollEncKey: secret,
+      voterJid: ownJid,
+    });
+    const messageId = generateMessageIDV2(me.id);
+    await this.sock.relayMessage(
+      isLidUser(stored.key.remoteJid) ? stored.key.remoteJid : jid,
+      {
+        pollUpdateMessage: {
+          pollCreationMessageKey: {
+            remoteJid: stored.key.remoteJid,
+            fromMe: stored.key.fromMe,
+            id: pollKey.id,
+            participant: stored.key.participant || undefined,
+          },
+          vote: { encPayload: vote.encPayload, encIv: vote.encIv },
+          senderTimestampMs: Date.now(),
+        },
+      },
+      {
+        messageId: messageId,
+        additionalNodes: [{ tag: 'meta', attrs: { polltype: 'vote' } }],
+      },
+    );
+    return { id: `true_${jid}_${messageId}` };
   }
 
   @Activity()
