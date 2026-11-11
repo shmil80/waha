@@ -140,6 +140,7 @@ import {
   MessageLocationRequest,
   MessagePollRequest,
   MessageReactionRequest,
+  MessageButtonReply,
   MessageReplyRequest,
   MessageStarRequest,
   MessageStickerRequest,
@@ -1293,6 +1294,29 @@ export class WhatsappSessionNoWebCore extends WhatsappSession {
       mentions: mentions,
     };
     return await this.sock.sendMessage(chatId, message, options);
+  }
+
+  // Mail2Chat: NOWEB had no sendButtonsReply (only GOWS did). This sends what a click on a quick-reply button of a template message sends,
+  // a templateButtonReplyMessage quoting the menu message, so a bot that wants the button and not typed text accepts it.
+  @Activity()
+  async sendButtonsReply(request: MessageButtonReply) {
+    const chatId = await this.hooks.wid.chat.promise(
+      request.chatId,
+      'sendButtonsReply',
+    );
+    const options = await this.getMessageOptions({
+      chatId: request.chatId,
+      reply_to: request.replyTo,
+    });
+    const message: any = {
+      buttonReply: {
+        displayText: request.selectedDisplayText,
+        id: request.selectedButtonID,
+      },
+      type: 'template',
+    };
+    const result = await this.sock.sendMessage(chatId, message, options);
+    return await this.toWAMessage(result);
   }
 
   @Activity()
