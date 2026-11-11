@@ -445,6 +445,17 @@ export class WhatsappSessionNoWebCore extends WhatsappSession {
       keepAliveIntervalMs: 30_000,
       getMessage: (key) => this.getMessage(key),
       syncFullHistory: fullSyncEnabled,
+      // Mail2Chat: relay only messages from now on, so a newly linked device ignores the chats and messages WhatsApp pushes to it
+      // (INITIAL_BOOTSTRAP, RECENT, FULL, ON_DEMAND). The light types stay on: push names, non-blocking data and the LID to phone
+      // number mappings that every type carries; Baileys warns that switching all of them off breaks the LID mappings.
+      shouldSyncHistoryMessage: ({ syncType }) => {
+        const types = proto.HistorySync.HistorySyncType;
+        return (
+          syncType === types.PUSH_NAME ||
+          syncType === types.NON_BLOCKING_DATA ||
+          syncType === types.INITIAL_STATUS_V3
+        );
+      },
       msgRetryCounterCache: this.msgRetryCounterCache,
       placeholderResendCache: this.placeholderResendCache,
       markOnlineOnConnect: markOnlineOnConnect,
