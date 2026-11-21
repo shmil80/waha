@@ -1,0 +1,2 @@
+# mail2chat: yarn applies these to the Baileys dependency and hashes them; a CRLF checkout would change both
+patches/*.patch text eol=lf

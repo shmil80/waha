@@ -143,7 +143,7 @@
     "axios": "^1.19.0",
     "whatsapp-rust-bridge": "npm:@devlikeapro/whatsapp-rust-bridge@0.5.2",
     "sharp": "^0.35.5",
-    "@adiwajshing/baileys": "patch:@adiwajshing/baileys@github%3Adevlikeapro/Baileys%23fork-master-2026-04-28#./patches/baileys-poll-vote-hide.patch"
+    "@adiwajshing/baileys": "patch:@adiwajshing/baileys@github%3Adevlikeapro/Baileys%23fork-master-2026-04-28#./patches/baileys-poll-vote-hide.patch&./patches/baileys-offline-batches.patch"
   },
   "devDependencies": {
     "@grpc/grpc-js": "^1.14.1",

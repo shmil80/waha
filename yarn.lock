@@ -36,9 +36,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@adiwajshing/baileys@patch:@adiwajshing/baileys@github%3Adevlikeapro/Baileys%23fork-master-2026-04-28#./patches/baileys-poll-vote-hide.patch::locator=waha%40workspace%3A.":
+"@adiwajshing/baileys@patch:@adiwajshing/baileys@github%3Adevlikeapro/Baileys%23fork-master-2026-04-28#./patches/baileys-poll-vote-hide.patch&./patches/baileys-offline-batches.patch::locator=waha%40workspace%3A.":
   version: 7.0.0-rc14
-  resolution: "@adiwajshing/baileys@patch:@adiwajshing/baileys@https%3A//github.com/devlikeapro/Baileys.git%23commit=f6bf3cfdf9c9acab637e9807d0d069209aa83b7e#./patches/baileys-poll-vote-hide.patch::version=7.0.0-rc14&hash=219b68&locator=waha%40workspace%3A."
+  resolution: "@adiwajshing/baileys@patch:@adiwajshing/baileys@https%3A//github.com/devlikeapro/Baileys.git%23commit=f6bf3cfdf9c9acab637e9807d0d069209aa83b7e#./patches/baileys-poll-vote-hide.patch&./patches/baileys-offline-batches.patch::version=7.0.0-rc14&hash=54cf08&locator=waha%40workspace%3A."
   dependencies:
     "@cacheable/node-cache": "npm:^1.4.0"
     "@hapi/boom": "npm:^9.1.3"
@@ -63,7 +63,7 @@ __metadata:
       optional: true
     link-preview-js:
       optional: true
-  checksum: 10/a8e85e297d9a5c6adf2d9a5597cf3a845a0963f9cda470c0b9febb0886b612884509c8776e29401adcce1f7e8a8a1efc7df5e433dfffb649f6a7ea9d5b23c2c5
+  checksum: 10/11e61da3e8405ddfa5daa1971e20d661ec736f2013c478574a89df5ba88a21c2bd87af0a008d18708187f09650c404c37e2a4db20a69921de8bbdf8c399bde89
   languageName: node
   linkType: hard
 

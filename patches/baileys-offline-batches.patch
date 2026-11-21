@@ -1,0 +1,69 @@
+diff --git a/lib/Socket/socket.js b/lib/Socket/socket.js
+index ea53a8b..c3b2aab 100644
+--- a/lib/Socket/socket.js
++++ b/lib/Socket/socket.js
+@@ -813,13 +813,50 @@ export const makeSocket = (config) => {
+     ws.on('CB:ib,,downgrade_webclient', () => {
+         void end(new Boom('Multi-device beta not joined', { statusCode: DisconnectReason.multideviceMismatch }));
+     });
++    // mail2chat: the offline catch-up is read in batches until WhatsApp sends the 'offline' node (the end of it). Baileys asked for one batch of 100
++    // and never for the next, so a backlog over 100 never finished and WhatsApp held every later message, live ones included
++    // (docs/incident-2026-11-16-waha-session-stall.md in mail2chat). The next batch is asked for after 100 stanzas marked 'offline' arrived, and also
++    // every 10 s while the end has not come, so a wrong count costs seconds, not the time until the next reconnect.
++    let offlineStanzas = 0;
++    let offlineDone = false;
++    let offlineTimer;
++    const requestOfflineBatch = async (why) => {
++        if (closed || offlineDone) {
++            return;
++        }
++        offlineStanzas = 0;
++        logger.info({ why }, 'requesting an offline batch');
++        try {
++            await sendNode({
++                tag: 'ib',
++                attrs: {},
++                content: [{ tag: 'offline_batch', attrs: { count: '100' } }]
++            });
++        }
++        catch (error) {
++            logger.warn({ error }, 'requesting an offline batch failed');
++        }
++    };
++    ws.on('frame', (frame) => {
++        if (offlineDone || frame instanceof Uint8Array || frame.attrs?.offline === undefined) {
++            return;
++        }
++        offlineStanzas += 1;
++        if (offlineStanzas >= 100) {
++            void requestOfflineBatch('100 offline stanzas received');
++        }
++    });
+     ws.on('CB:ib,,offline_preview', async (node) => {
+         logger.info('offline preview received', JSON.stringify(node));
+-        await sendNode({
+-            tag: 'ib',
+-            attrs: {},
+-            content: [{ tag: 'offline_batch', attrs: { count: '100' } }]
+-        });
++        await requestOfflineBatch('offline preview');
++        clearInterval(offlineTimer);
++        offlineTimer = setInterval(() => {
++            if (closed || offlineDone) {
++                clearInterval(offlineTimer);
++                return;
++            }
++            void requestOfflineBatch('the end of the offline catch-up has not come yet');
++        }, 10000);
+     });
+     ws.on('CB:ib,,edge_routing', (node) => {
+         const edgeRoutingNode = getBinaryNodeChild(node, 'edge_routing');
+@@ -841,6 +878,8 @@ export const makeSocket = (config) => {
+     });
+     // called when all offline notifs are handled
+     ws.on('CB:ib,,offline', (node) => {
++        offlineDone = true;
++        clearInterval(offlineTimer);
+         const child = getBinaryNodeChild(node, 'offline');
+         const offlineNotifs = +(child?.attrs.count || 0);
+         logger.info(`handled ${offlineNotifs} offline messages/notifications`);
