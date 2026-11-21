@@ -1,0 +1,13 @@
+diff --git a/lib/Socket/messages-send.js b/lib/Socket/messages-send.js
+index 2941012..1de1523 100644
+--- a/lib/Socket/messages-send.js
++++ b/lib/Socket/messages-send.js
+@@ -517,7 +517,7 @@ export const makeMessagesSocket = (config) => {
+                 await sendNode(stanza);
+                 return;
+             }
+-            if (normalizeMessageContent(message)?.pinInChatMessage || normalizeMessageContent(message)?.reactionMessage) {
++            if (normalizeMessageContent(message)?.pinInChatMessage || normalizeMessageContent(message)?.reactionMessage || normalizeMessageContent(message)?.pollUpdateMessage) {
+                 extraAttrs['decrypt-fail'] = 'hide'; // todo: expand for reactions and other types
+             }
+             if (isGroupOrStatus && !isRetryResend) {

@@ -36,6 +36,37 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@adiwajshing/baileys@patch:@adiwajshing/baileys@github%3Adevlikeapro/Baileys%23fork-master-2026-04-28#./patches/baileys-poll-vote-hide.patch::locator=waha%40workspace%3A.":
+  version: 7.0.0-rc14
+  resolution: "@adiwajshing/baileys@patch:@adiwajshing/baileys@https%3A//github.com/devlikeapro/Baileys.git%23commit=f6bf3cfdf9c9acab637e9807d0d069209aa83b7e#./patches/baileys-poll-vote-hide.patch::version=7.0.0-rc14&hash=219b68&locator=waha%40workspace%3A."
+  dependencies:
+    "@cacheable/node-cache": "npm:^1.4.0"
+    "@hapi/boom": "npm:^9.1.3"
+    async-mutex: "npm:^0.5.0"
+    libsignal: "npm:^6.0.0"
+    lru-cache: "npm:^11.1.0"
+    music-metadata: "npm:^11.12.3"
+    p-queue: "npm:^9.0.0"
+    pino: "npm:^9.6"
+    protobufjs: "npm:^7.5.6"
+    whatsapp-rust-bridge: "npm:0.5.4"
+    ws: "npm:^8.13.0"
+  peerDependencies:
+    audio-decode: ^2.1.3
+    jimp: ^1.6.1
+    link-preview-js: ^3.0.0
+    sharp: "*"
+  peerDependenciesMeta:
+    audio-decode:
+      optional: true
+    jimp:
+      optional: true
+    link-preview-js:
+      optional: true
+  checksum: 10/a8e85e297d9a5c6adf2d9a5597cf3a845a0963f9cda470c0b9febb0886b612884509c8776e29401adcce1f7e8a8a1efc7df5e433dfffb649f6a7ea9d5b23c2c5
+  languageName: node
+  linkType: hard
+
 "@adiwajshing/keyed-db@npm:^0.2.4":
   version: 0.2.4
   resolution: "@adiwajshing/keyed-db@npm:0.2.4"
