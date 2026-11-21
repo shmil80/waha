@@ -1,5 +1,5 @@
 diff --git a/lib/Socket/messages-send.js b/lib/Socket/messages-send.js
-index 2941012..1de1523 100644
+index 2941012..087a05a 100644
 --- a/lib/Socket/messages-send.js
 +++ b/lib/Socket/messages-send.js
 @@ -517,7 +517,7 @@ export const makeMessagesSocket = (config) => {
@@ -11,3 +11,11 @@ index 2941012..1de1523 100644
                  extraAttrs['decrypt-fail'] = 'hide'; // todo: expand for reactions and other types
              }
              if (isGroupOrStatus && !isRetryResend) {
+@@ -740,6 +740,7 @@ export const makeMessagesSocket = (config) => {
+                     attrs: {
+                         v: '2',
+                         type,
++                        ...extraAttrs, // mail2chat: a retry resend keeps decrypt-fail='hide' (and mediatype) like the first send
+                         count: participant.count.toString()
+                     },
+                     content: encryptedContent
